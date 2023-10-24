@@ -3,7 +3,14 @@
 --- !u!78 &1
 TagManager:
   serializedVersion: 2
-  tags: []
+  tags:
+  - Bonus
+  - Ladder
+  - Enemy
+  - Key
+  - Heart
+  - FallLevel
+  - MovingPlatform
   layers:
   - Default
   - TransparentFX
@@ -52,6 +59,9 @@ TagManager:
     locked: 0
   - name: Platforms
     uniqueID: 3014790549
+    locked: 0
+  - name: Ladder
+    uniqueID: 822147383
     locked: 0
   - name: Player & enemies
     uniqueID: 2945865569

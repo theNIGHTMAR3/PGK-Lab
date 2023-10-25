@@ -21,9 +21,7 @@ public class PlayerContoller : MonoBehaviour
 	private bool isOnLadder = false;
 	private bool hasFinished = false;
 
-	private int score = 0;
 	private int lives = 3;
-	private int keysFound = 0;
 	private Vector2 startPosition;
 	
 	public LayerMask groundLayer;
@@ -45,52 +43,54 @@ public class PlayerContoller : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-
-		isWalking = false;
-		if(!hasFinished && !animator.GetBool("isDead"))
+		if(GameManager.instance.currentGameState == GameState.GS_GAME )
 		{
-			if (Input.GetKey(KeyCode.RightArrow) || Input.GetKey(KeyCode.D))
+			isWalking = false;
+			if (!hasFinished && !animator.GetBool("isDead"))
 			{
-				isWalking = true;
-				if (!isFacingRight)
-				{
-					Flip();
-				}
-				transform.Translate(moveSpeed * Time.deltaTime, 0.0f, 0.0f, Space.World);
-			}
-			if (Input.GetKey(KeyCode.LeftArrow) || Input.GetKey(KeyCode.A))
-			{
-				isWalking = true;
-				if (isFacingRight)
-				{
-					Flip();
-				}
-				transform.Translate(-moveSpeed * Time.deltaTime, 0.0f, 0.0f, Space.World);
-			}
-			if (isOnLadder)
-			{
-				if (Input.GetKey(KeyCode.UpArrow) || Input.GetKey(KeyCode.W))
+				if (Input.GetKey(KeyCode.RightArrow) || Input.GetKey(KeyCode.D))
 				{
 					isWalking = true;
-
-					transform.Translate(0.0f, moveSpeed * Time.deltaTime, 0.0f, Space.World);
+					if (!isFacingRight)
+					{
+						Flip();
+					}
+					transform.Translate(moveSpeed * Time.deltaTime, 0.0f, 0.0f, Space.World);
 				}
-				if (Input.GetKey(KeyCode.DownArrow) || Input.GetKey(KeyCode.S))
+				if (Input.GetKey(KeyCode.LeftArrow) || Input.GetKey(KeyCode.A))
 				{
 					isWalking = true;
+					if (isFacingRight)
+					{
+						Flip();
+					}
+					transform.Translate(-moveSpeed * Time.deltaTime, 0.0f, 0.0f, Space.World);
+				}
+				if (isOnLadder)
+				{
+					if (Input.GetKey(KeyCode.UpArrow) || Input.GetKey(KeyCode.W))
+					{
+						isWalking = true;
 
-					transform.Translate(0.0f, -moveSpeed * Time.deltaTime, 0.0f, Space.World);
+						transform.Translate(0.0f, moveSpeed * Time.deltaTime, 0.0f, Space.World);
+					}
+					if (Input.GetKey(KeyCode.DownArrow) || Input.GetKey(KeyCode.S))
+					{
+						isWalking = true;
+
+						transform.Translate(0.0f, -moveSpeed * Time.deltaTime, 0.0f, Space.World);
+					}
+				}
+
+				if (Input.GetMouseButtonDown(0))
+				{
+					Jump();
 				}
 			}
 
-			if (Input.GetMouseButtonDown(0))
-			{
-				Jump();
-			}
+			animator.SetBool("isGrounded", IsGrounded());
+			animator.SetBool("isWalking", isWalking);
 		}
-
-		animator.SetBool("isGrounded", IsGrounded());
-		animator.SetBool("isWalking", isWalking);
 	}
 
 	private bool IsGrounded()
@@ -120,8 +120,7 @@ public class PlayerContoller : MonoBehaviour
 	{
 		if(other.CompareTag("Bonus"))
 		{
-			score += 10;
-			Debug.Log("Score: " + score);
+			GameManager.instance.AddCoins();
 			other.gameObject.SetActive(false);
 		}
 		if(other.CompareTag("Ladder"))
@@ -134,8 +133,8 @@ public class PlayerContoller : MonoBehaviour
 		{
 			if(transform.position.y > other.gameObject.transform.position.y)
 			{
-				score += 10;
-				Debug.Log("Killed enemy");
+				GameManager.instance.AddCoins();
+				GameManager.instance.EnemyKilled();
 			}
             else
             {
@@ -145,24 +144,24 @@ public class PlayerContoller : MonoBehaviour
         }
 		if(other.CompareTag("FallLevel"))
 		{
-			Debug.Log("Fell aout of map");
+			Debug.Log("Fell out of map");
 			Death();
 		}
 		if (other.CompareTag("Key"))
 		{
-			Debug.Log("Found a key");
-			keysFound++;
+			GameManager.instance.AddKeys();
 			other.gameObject.SetActive(false);
 		}
 		if (other.CompareTag("Heart"))
-		{
-			Debug.Log("Found an extra live, current lives: "+lives);
+		{	
 			lives++;
+			Debug.Log("Found an extra live, current lives: " + lives);
+			GameManager.instance.FoundLife(lives);
 			other.gameObject.SetActive(false);
 		}
 		if (other.CompareTag("Finish"))
 		{
-			if(keysFound == 3)
+			if(GameManager.instance.HasFoundAllKeys)
 			{
 				Debug.Log("Level comleted");
 				hasFinished = true;
@@ -195,14 +194,16 @@ public class PlayerContoller : MonoBehaviour
 
 	private void Death()
 	{
+		lives--;
 		animator.SetBool("isDead", true);
+
 		if (lives == 0)
 		{
 			Debug.Log("No more lives, GAME OVER");
 		}
 		else
 		{
-			lives--;
+			GameManager.instance.PlayerKilled(lives);
 			transform.position = startPosition;
 			rigidBody.velocity = new Vector2(0f, 0f);
 			animator.SetBool("isDead", false);

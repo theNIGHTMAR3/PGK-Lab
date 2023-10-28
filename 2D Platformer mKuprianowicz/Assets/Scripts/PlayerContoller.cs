@@ -43,7 +43,8 @@ public class PlayerContoller : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-		if(GameManager.instance.currentGameState == GameState.GS_GAME )
+
+		if (GameManager.instance.currentGameState == GameState.GS_GAME )
 		{
 			isWalking = false;
 			if (!hasFinished && !animator.GetBool("isDead"))
@@ -129,11 +130,10 @@ public class PlayerContoller : MonoBehaviour
 			rigidBody.velocity = new Vector2(rigidBody.velocity.x, 0f);
 			isOnLadder = true;
 		}
-		if(other.CompareTag("Enemy"))
+		if(other.CompareTag("Enemy") && !animator.GetBool("isDead"))
 		{
 			if(transform.position.y > other.gameObject.transform.position.y)
 			{
-				GameManager.instance.AddCoins();
 				GameManager.instance.EnemyKilled();
 			}
             else
@@ -145,6 +145,8 @@ public class PlayerContoller : MonoBehaviour
 		if(other.CompareTag("FallLevel"))
 		{
 			Debug.Log("Fell out of map");
+			rigidBody.gravityScale = 0;
+			rigidBody.velocity = new Vector2(0f,0f);
 			Death();
 		}
 		if (other.CompareTag("Key"))
@@ -164,7 +166,10 @@ public class PlayerContoller : MonoBehaviour
 			if(GameManager.instance.HasFoundAllKeys)
 			{
 				Debug.Log("Level comleted");
+				GameManager.instance.LevelCompleted();
 				hasFinished = true;
+				isWalking = false;
+			
 			}
 			else
 			{
@@ -190,6 +195,10 @@ public class PlayerContoller : MonoBehaviour
 		{
 			transform.SetParent(null);
 		}
+		if(other.CompareTag("FallLevel"))
+		{
+			rigidBody.gravityScale = 1;
+		}
 	}
 
 	private void Death()
@@ -200,6 +209,7 @@ public class PlayerContoller : MonoBehaviour
 		if (lives == 0)
 		{
 			Debug.Log("No more lives, GAME OVER");
+			GameManager.instance.GameOver();
 		}
 		else
 		{

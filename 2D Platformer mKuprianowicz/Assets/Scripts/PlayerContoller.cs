@@ -13,13 +13,29 @@ public class PlayerContoller : MonoBehaviour
 	[Range(0.01f, 20.0f)][SerializeField] private float moveSpeed = 0.2f; // moving speed of the player
 	[Range(0.01f, 20.0f)][SerializeField] private float jumpForce = 3.5f; // moving speed of the player
 	[Space(10)]
+	[Header("Audio clips")]
+	public AudioClip coinSound;
+	public AudioClip gemSound;
+	public AudioClip enemyKilledSound;
+	public AudioClip diedByEnemySound;
+	public AudioClip fellOutOfMapSound;
+	public AudioClip foundHeartSound;
+	public AudioClip finishedLevelSound;
+	[Space(10)]
 
 	private Rigidbody2D rigidBody;
 	private Animator animator;
+	private AudioSource source;
+
 	private bool isWalking = false;
 	private bool isFacingRight = true;
 	private bool isOnLadder = false;
 	private bool hasFinished = false;
+
+
+	private bool leftClicked;
+	private bool rightClicked;
+	private bool downClicked;
 
 	private int lives = 3;
 	private Vector2 startPosition;
@@ -31,6 +47,7 @@ public class PlayerContoller : MonoBehaviour
 		rigidBody = GetComponent<Rigidbody2D>();
 		animator = GetComponent<Animator>();
 		startPosition = transform.position;
+		source  = GetComponent<AudioSource>();
 	}
 
 
@@ -49,7 +66,7 @@ public class PlayerContoller : MonoBehaviour
 			isWalking = false;
 			if (!hasFinished && !animator.GetBool("isDead"))
 			{
-				if (Input.GetKey(KeyCode.RightArrow) || Input.GetKey(KeyCode.D))
+				if (Input.GetKey(KeyCode.RightArrow) || Input.GetKey(KeyCode.D) || rightClicked)
 				{
 					isWalking = true;
 					if (!isFacingRight)
@@ -58,7 +75,7 @@ public class PlayerContoller : MonoBehaviour
 					}
 					transform.Translate(moveSpeed * Time.deltaTime, 0.0f, 0.0f, Space.World);
 				}
-				if (Input.GetKey(KeyCode.LeftArrow) || Input.GetKey(KeyCode.A))
+				if (Input.GetKey(KeyCode.LeftArrow) || Input.GetKey(KeyCode.A) || leftClicked)
 				{
 					isWalking = true;
 					if (isFacingRight)
@@ -75,7 +92,7 @@ public class PlayerContoller : MonoBehaviour
 
 						transform.Translate(0.0f, moveSpeed * Time.deltaTime, 0.0f, Space.World);
 					}
-					if (Input.GetKey(KeyCode.DownArrow) || Input.GetKey(KeyCode.S))
+					if (Input.GetKey(KeyCode.DownArrow) || Input.GetKey(KeyCode.S) || downClicked)
 					{
 						isWalking = true;
 
@@ -83,7 +100,7 @@ public class PlayerContoller : MonoBehaviour
 					}
 				}
 
-				if (Input.GetMouseButtonDown(0))
+				if (Input.GetKeyDown(KeyCode.Space))
 				{
 					Jump();
 				}
@@ -101,7 +118,7 @@ public class PlayerContoller : MonoBehaviour
 
 	}
 
-	private void Jump()
+	public void Jump()
 	{
 		if(IsGrounded() || isOnLadder)
 		{
@@ -121,7 +138,8 @@ public class PlayerContoller : MonoBehaviour
 	{
 		if(other.CompareTag("Bonus"))
 		{
-			GameManager.instance.AddCoins();
+			source.PlayOneShot(coinSound, AudioListener.volume + 10);
+			GameManager.instance.AddCoins();	
 			other.gameObject.SetActive(false);
 		}
 		if(other.CompareTag("Ladder"))
@@ -134,10 +152,12 @@ public class PlayerContoller : MonoBehaviour
 		{
 			if(transform.position.y > other.gameObject.transform.position.y)
 			{
+				source.PlayOneShot(enemyKilledSound, AudioListener.volume + 10);
 				GameManager.instance.EnemyKilled();
 			}
             else
             {
+				source.PlayOneShot(diedByEnemySound, AudioListener.volume + 10);
 				Debug.Log("Killed by enemy");
 				Death();
 			}
@@ -145,12 +165,14 @@ public class PlayerContoller : MonoBehaviour
 		if(other.CompareTag("FallLevel"))
 		{
 			Debug.Log("Fell out of map");
+			source.PlayOneShot(fellOutOfMapSound, AudioListener.volume + 10);
 			rigidBody.gravityScale = 0;
 			rigidBody.velocity = new Vector2(0f,0f);
 			Death();
 		}
 		if (other.CompareTag("Key"))
 		{
+			source.PlayOneShot(gemSound, AudioListener.volume + 10);
 			GameManager.instance.AddKeys();
 			other.gameObject.SetActive(false);
 		}
@@ -158,6 +180,7 @@ public class PlayerContoller : MonoBehaviour
 		{	
 			lives++;
 			Debug.Log("Found an extra live, current lives: " + lives);
+			source.PlayOneShot(foundHeartSound, AudioListener.volume + 10);
 			GameManager.instance.FoundLife(lives);
 			other.gameObject.SetActive(false);
 		}
@@ -165,7 +188,8 @@ public class PlayerContoller : MonoBehaviour
 		{
 			if(GameManager.instance.HasFoundAllKeys)
 			{
-				Debug.Log("Level comleted");
+				Debug.Log("Level completed");
+				source.PlayOneShot(finishedLevelSound, AudioListener.volume + 10);
 				GameManager.instance.LevelCompleted();
 				hasFinished = true;
 				isWalking = false;
@@ -219,5 +243,20 @@ public class PlayerContoller : MonoBehaviour
 			animator.SetBool("isDead", false);
 			Debug.Log("Respawned, lives left: "+ lives);
 		}
+	}
+
+	public void SetLeftClicked(bool clicked)
+	{
+		leftClicked = clicked;
+	}
+
+	public void SetRightClicked(bool clicked)
+	{
+		rightClicked = clicked;
+	}
+
+	public void SetDownClicked(bool clicked)
+	{
+		downClicked = clicked;
 	}
 }

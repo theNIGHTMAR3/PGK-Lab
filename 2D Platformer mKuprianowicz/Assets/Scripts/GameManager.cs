@@ -10,7 +10,8 @@ public enum GameState
 	GS_PAUSEMENU,
 	GS_GAME,
 	GS_GAME_OVER,
-	GS_LEVELCOMPLETED
+	GS_LEVELCOMPLETED,
+	GS_OPTIONS
 }
 
 public class GameManager : MonoBehaviour
@@ -20,6 +21,7 @@ public class GameManager : MonoBehaviour
 	public Canvas pauseMenuCanvas;
 	public Canvas levelCompletedCanvas;
 	public Canvas gameOverCanvas;
+	public Canvas optionsCanvas;
 	public static GameManager instance;
 
 	public Text coinsText;
@@ -28,6 +30,7 @@ public class GameManager : MonoBehaviour
 	public Text finalLivesNumber;
 	public Text enemiesCounter;
 	public Text finalScoreNumber;
+	public Text highscoreNumber;
 
 	public Image[] keysTab;
 	public Image[] playerLivesTab;
@@ -54,6 +57,16 @@ public class GameManager : MonoBehaviour
 
 		playerLivesTab[playerLivesTab.Length - 1].enabled = false;
 
+		if(!PlayerPrefs.HasKey("HighscoreLevel1"))
+		{
+			PlayerPrefs.SetInt("HighscoreLevel1", 0);
+		}
+
+		if (!PlayerPrefs.HasKey("HighscoreLevel2"))
+		{
+			PlayerPrefs.SetInt("HighscoreLevel2", 0);
+		}
+
 	}
 
 	// Start is called before the first frame update
@@ -67,7 +80,7 @@ public class GameManager : MonoBehaviour
 	void Update()
 	{
 
-		if (Input.GetKeyDown(KeyCode.Escape) && currentGameState == GameState.GS_PAUSEMENU)
+		if (Input.GetKeyDown(KeyCode.Escape) && (currentGameState == GameState.GS_PAUSEMENU || currentGameState == GameState.GS_OPTIONS))
 		{
 
 			InGame();
@@ -99,7 +112,19 @@ public class GameManager : MonoBehaviour
 		levelCompletedCanvas.enabled = (newGameState == GameState.GS_LEVELCOMPLETED);
 		gameOverCanvas.enabled = (newGameState == GameState.GS_GAME_OVER);
 		inGameCanvas.enabled = (newGameState == GameState.GS_GAME);
+		optionsCanvas.enabled = (newGameState == GameState.GS_OPTIONS);
 		currentGameState = newGameState;
+
+		if(newGameState == GameState.GS_LEVELCOMPLETED) 
+		{
+			Scene currentScene = SceneManager.GetActiveScene();
+
+		}
+		if(newGameState != GameState.GS_OPTIONS || newGameState !=GameState.GS_PAUSEMENU)
+		{
+			Time.timeScale = 1.0f;
+		}
+
 		new WaitForSeconds(1);
 	}
 
@@ -117,7 +142,14 @@ public class GameManager : MonoBehaviour
 	public void PauseMenu()
 	{
 		SetGameState(GameState.GS_PAUSEMENU);
+		Time.timeScale = 0.0f;
 
+	}
+
+	public void Options()
+	{
+		SetGameState(GameState.GS_OPTIONS);
+		Time.timeScale = 0.0f;
 	}
 
 	public void LevelCompleted()
@@ -191,8 +223,8 @@ public class GameManager : MonoBehaviour
 
 	public void OnExitButtonClicked()
 	{
-		inGameCanvas.enabled = false;
-		pauseMenuCanvas.enabled = false;
+		//inGameCanvas.enabled = false;
+		//pauseMenuCanvas.enabled = false;
 		SceneManager.LoadScene("MainMenu");
 	}
 
@@ -216,7 +248,36 @@ public class GameManager : MonoBehaviour
 			timeScore = Mathf.Max(0, 220 - seconds);
 		}
 
-		int finalscore = 50 * lives + 20 * enemiesKilled + 10 * coins + timeScore;
-		finalScoreNumber.text = finalscore.ToString();
+		int finalScore = 50 * lives + 20 * enemiesKilled + 10 * coins + timeScore;
+		finalScoreNumber.text = finalScore.ToString();
+
+		string highscoreLevelName = "Highscore" + SceneManager.GetActiveScene().name;
+
+		//Debug.Log(highscoreLevelName);
+
+		if (finalScore > PlayerPrefs.GetInt(highscoreLevelName) )
+		{
+			PlayerPrefs.SetInt(highscoreLevelName, finalScore);
+		}
+		highscoreNumber.text = PlayerPrefs.GetInt(highscoreLevelName).ToString();
+	}
+
+	public void IncreaseGraphicsQuality()
+	{
+		
+		QualitySettings.IncreaseLevel();
+		
+	}
+
+	public void DecreaseGraphicsQuality()
+	{
+		
+		QualitySettings.DecreaseLevel();
+	}
+
+	
+	public void SetVolume(float vol)
+	{
+		AudioListener.volume = vol;
 	}
 }

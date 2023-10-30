@@ -1,12 +1,32 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 
 public class MainMenu : MonoBehaviour
 {
-    // Start is called before the first frame update
-    void Start()
+
+	public Text highscoreLevel1Number;
+	public Text highscoreLevel2Number;
+	
+	private void Awake()
+	{
+		if(!PlayerPrefs.HasKey("HighscoreLevel1"))
+		{
+			PlayerPrefs.SetInt("HighscoreLevel1", 0);
+		}
+		highscoreLevel1Number.text= PlayerPrefs.GetInt("HighscoreLevel1").ToString();
+
+		if (!PlayerPrefs.HasKey("HighscoreLevel2"))
+		{
+			PlayerPrefs.SetInt("HighscoreLevel2", 0);
+		}
+		highscoreLevel2Number.text = PlayerPrefs.GetInt("HighscoreLevel2").ToString();
+	}
+
+	// Start is called before the first frame update
+	void Start()
     {
         
     }
@@ -20,7 +40,7 @@ public class MainMenu : MonoBehaviour
     public IEnumerator StartGame(string levelName)
     {
 
-        yield return new WaitForSeconds(.1f);
+        yield return new WaitForSeconds(.2f);
 		SceneManager.LoadScene(levelName);
 	}
 

@@ -42,7 +42,7 @@ public class GameManager : MonoBehaviour
 	private int maxKeyNumber=3;
 	private int enemiesKilled = 0;
 	private bool hasFoundAllKeys = false;
-	private float timer = 0f;
+	public float timer = 0f;
 
 
 
@@ -50,10 +50,15 @@ public class GameManager : MonoBehaviour
 	{
 		instance = this;
 
-		foreach (Image key in keysTab)
+		if (SceneManager.GetActiveScene().name == "Level1")
 		{
-			key.color = Color.gray;
+			foreach (Image key in keysTab)
+			{
+				key.color = Color.gray;
+			}
 		}
+
+		
 
 		playerLivesTab[playerLivesTab.Length - 1].enabled = false;
 
@@ -103,7 +108,13 @@ public class GameManager : MonoBehaviour
 			timeText.text = string.Format("{0:00}:{1:00}", minutes, seconds);
 		}
 
-
+		if(SceneManager.GetActiveScene().name == "Level2")
+		{
+			if(timer>LevelGenerator.Instance.maxGameTime && !LevelGenerator.Instance.shouldFinish)
+			{
+				LevelGenerator.Instance.Finish();
+			}
+		}
 	}
 
 	void SetGameState(GameState newGameState)
@@ -223,8 +234,6 @@ public class GameManager : MonoBehaviour
 
 	public void OnExitButtonClicked()
 	{
-		//inGameCanvas.enabled = false;
-		//pauseMenuCanvas.enabled = false;
 		SceneManager.LoadScene("MainMenu");
 	}
 

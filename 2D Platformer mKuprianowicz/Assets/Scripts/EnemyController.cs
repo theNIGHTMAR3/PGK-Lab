@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class EnemyController : MonoBehaviour
 {
@@ -30,34 +31,72 @@ public class EnemyController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-		if(animator.GetBool("isDead") == false)
+		// enemy behaviour for level1
+		if (SceneManager.GetActiveScene().name == "Level1")
 		{
-			if (isMovingRight)
+			if (animator.GetBool("isDead") == false)
 			{
-				if (transform.position.x <= startPositionX + moveRange)
+				if (isMovingRight)
 				{
-					MoveRight();
+					if (transform.position.x <= startPositionX + moveRange)
+					{
+						MoveRight();
+					}
+					else
+					{
+						isMovingRight = false;
+						MoveLeft();
+					}
 				}
 				else
 				{
-					isMovingRight = false;
-					MoveLeft();
-				}
-			}
-			else
-			{
-				if (transform.position.x >= startPositionX - moveRange)
-				{
-					MoveLeft();
-				}
-				else
-				{
-					isMovingRight = true;
-					MoveRight();
+					if (transform.position.x >= startPositionX - moveRange)
+					{
+						MoveLeft();
+					}
+					else
+					{
+						isMovingRight = true;
+						MoveRight();
 
+					}
 				}
 			}
-		}  
+		}
+		// enemy behaviour for level2
+		else
+		{
+			if (animator.GetBool("isDead") == false)
+			{
+				if (isMovingRight)
+				{
+					if (transform.localPosition.x < startPositionX + moveRange)
+					{
+						MoveRight();
+					}
+
+					else
+					{
+						isMovingRight = false;
+						MoveLeft();
+						Flip();
+					}
+				}
+				else
+				{
+					if (transform.localPosition.x >= startPositionX - moveRange)
+					{
+						MoveLeft();
+					}
+					else
+					{
+						isMovingRight = true;
+						MoveRight();
+
+					}
+				}
+			}
+		}
     }
 
 	private void Flip()

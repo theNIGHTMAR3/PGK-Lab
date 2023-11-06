@@ -6,7 +6,13 @@ public class LeaveTrigger : MonoBehaviour
 {
 	private void OnTriggerEnter2D(Collider2D collision)
 	{
-		LevelGenerator.Instance.AddPiece();
-		LevelGenerator.Instance.RemoveOldestPiece();
+		if(collision.CompareTag("Player"))
+		{
+			if (!LevelGenerator.Instance.shouldFinish)
+			{
+				LevelGenerator.Instance.AddPiece();
+				LevelGenerator.Instance.RemoveOldestPiece();
+			}		
+		}	
 	}
 }
